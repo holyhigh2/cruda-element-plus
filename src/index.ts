@@ -4,8 +4,7 @@
  * element-plus专用接口
  * @author holyhigh
  */
-import { each } from '@holyhigh/func.js'
-import { FormInstance } from 'element-plus'
+import { each } from 'myfx/collection'
 import { getCurrentInstance, reactive } from 'vue'
 import CRUD, { crudError, RestUrl } from 'cruda'
 import * as packageInfo from '../package.json'
@@ -26,6 +25,12 @@ export function useCrud(restURL: string | RestUrl): CRUD {
     value: $crud,
     enumerable: false,
   })
+  
+  //crud入口标识
+  if(vm){
+    (vm as any).$isCrudEntry = true
+  }
+
   return $crud as CRUD
 }
 
@@ -52,6 +57,11 @@ export function useCruds(
     value: $cruds,
     enumerable: false,
   })
+
+  //crud入口标识
+  if(vm){
+    (vm as any).$isCrudEntry = true
+  }
 
   return $cruds
 }
@@ -99,23 +109,6 @@ CRUD.install = function (app, options) {
     crudError('Cannot find [request] in the installation options')
   }
   CRUD.request = options.request
-
-  //重载submit
-  const submit = CRUD.prototype.submit
-  CRUD.prototype.submit = async function (formEl: FormInstance): Promise<any> {
-    return new Promise((resolue, reject) => {
-      formEl.validate(async (valid, invalidFields) => {
-        if (valid) {
-          submit
-            .call(this, null)
-            .then((rs: any) => resolue(rs))
-            .catch((e: Error) => reject(e))
-        } else {
-          reject(invalidFields)
-        }
-      })
-    })
-  }
 
   // welcome info
   const ssAry: string[] = []

@@ -1,6 +1,6 @@
 {
   "name": "cruda-element-plus",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A Cruda adapter for element-plus",
   "main": "index.js",
   "module": "index.js",
@@ -29,13 +29,13 @@
     "build": "rollup --config"
   },
   "peerDependencies": {
-    "@holyhigh/func.js": ">=2.2.x",
+    "myfx": ">=1.x",
     "cruda":"1.x",
     "element-plus":"2.x",
     "vue":"3.x"
   },
   "devDependencies": {
-    "@holyhigh/func.js": "^2.2.3",
+    "myfx":"1.0.3",
     "@babel/preset-typescript": "^7.18.6",
     "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "14.1.0",
