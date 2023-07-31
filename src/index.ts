@@ -4,9 +4,10 @@
  * element-plus专用接口
  * @author holyhigh
  */
-import { each } from 'myfx/collection'
+import {closest} from 'myfx/tree'
+import {noop} from 'myfx/utils'
 import { getCurrentInstance, reactive } from 'vue'
-import CRUD, { crudError, RestUrl } from 'cruda'
+import CRUD, { crudError, RestUrl,_newCrud,_newCruds,_onHook } from 'cruda'
 import * as packageInfo from '../package.json'
 
 /**
@@ -15,20 +16,15 @@ import * as packageInfo from '../package.json'
  * @return {CRUD} $crud
  */
 export function useCrud(restURL: string | RestUrl): CRUD {
-  const $crud = reactive(new CRUD(restURL))
   const vm = getCurrentInstance()
-  Object.defineProperty($crud, 'vm', {
-    value: vm as Record<string, any>,
-    enumerable: false,
-  })
-  Object.defineProperty(vm, '_crud', {
-    value: $crud,
-    enumerable: false,
-  })
-  
+  const $crud = reactive(_newCrud(restURL,vm as Record<string, any>))
+
   //crud入口标识
   if(vm){
     (vm as any).$isCrudEntry = true
+  }
+  if($crud !== (vm as any).__crud_){
+    (vm as any).__crud_ = $crud
   }
 
   return $crud as CRUD
@@ -42,25 +38,16 @@ export function useCrud(restURL: string | RestUrl): CRUD {
 export function useCruds(
   restURL: Record<string, string | RestUrl>
 ): Record<string, CRUD> {
-  const $cruds: Record<string, CRUD> = {}
   const vm = getCurrentInstance()
-  each(restURL, (v: RestUrl | string, k: string) => {
-    const $crud = reactive(new CRUD(v))
-    Object.defineProperty($crud, 'vm', {
-      value: vm as Record<string, any>,
-      enumerable: false,
-    })
-
-    $cruds[k] = $crud as CRUD
-  })
-  Object.defineProperty(vm, '_cruds', {
-    value: $cruds,
-    enumerable: false,
-  })
+  const $cruds: Record<string, CRUD> = reactive(_newCruds(restURL,vm as Record<string, any>))
 
   //crud入口标识
   if(vm){
     (vm as any).$isCrudEntry = true
+  }
+
+  if($cruds !== (vm as any).__cruds_){
+    (vm as any).__cruds_ = $cruds
   }
 
   return $cruds
@@ -70,15 +57,16 @@ export function useCruds(
  * 用于注册钩子
  * @param {string} hookName 钩子名称
  * @param {Function} hook 回调函数
+ * @returns 移除钩子的函数
  */
 export function onHook(
   hookName: string,
   hook: (crud: CRUD, ...args: any[]) => void
-): void {
+): ()=>void {
   const vm = getCurrentInstance()
-  if (vm) {
-    ;(vm as Record<string, any>)[hookName] = hook
-  }
+  let crudVM = closest(vm as any,(node: Record<any, any>)=>!!node.__crud_nid_,'parent')
+  if(!crudVM)return noop
+  return _onHook(crudVM.__crud_nid_,hookName,hook,vm as Record<string, any>)
 }
 
 /**
@@ -87,21 +75,19 @@ export function onHook(
  * @return {CRUD | null} $crud 向上查找最近的crud实例或null
  */
 export function lookUpCrud(crudName?: string): CRUD | null {
-  let parent = getCurrentInstance()
-  let crud: CRUD | null = null
-  while (parent) {
-    let vm: Record<string, any> = parent as Record<string, any>
-    if (vm['_crud']) {
-      crud = vm['_crud'] as CRUD
-      break
-    } else if (vm['_cruds'] && crudName) {
-      crud = vm['_cruds'][crudName]
-      break
+  let vm = getCurrentInstance()
+  let crudVM = closest(vm as any,(node: Record<any, any>)=>!!node.__crud_nid_,'parent')
+  if(!crudVM)return crudVM
+
+  if(crudVM.__cruds_){
+    if (!crudName) {
+      crudError(`Must specify 'crudName' when multiple instances detected`)
+      return null
     }
-    parent = parent.parent
+    return crudVM.__cruds_[crudName]
   }
 
-  return crud
+  return crudVM.__crud_
 }
 
 CRUD.install = function (app, options) {

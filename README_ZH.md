@@ -64,7 +64,7 @@ createApp(App).use(CRUD, { request: request })
 
 ```html
 <template>
-  <el-table :data="$crud.table.data" @sort-change="(o) => $crud.changeSort(o)">
+  <el-table :data="$crud.table.data" @sort-change="(o) => $crud.changeOrder(o)">
     <el-table-column prop="uname" label="uname" width="180" />
     <el-table-column prop="email" label="email" width="180" sortable="custom" />
     <el-table-column prop="ip" label="ip" />
