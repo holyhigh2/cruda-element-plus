@@ -10,7 +10,7 @@ const pkg = require('./package.json')
 export default [
   {
     input: './src/index.ts',
-    external: ['@holyhigh/func.js','cruda','vue'],
+    external: ['myfx','cruda','vue'],
     plugins: [
       clear({
         targets: ['dist'],
