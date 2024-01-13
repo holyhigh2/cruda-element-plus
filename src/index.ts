@@ -169,9 +169,9 @@ CRUD.install = function (app, options) {
     }
   });
   console.info(
-    `%c %c %c CRUD-vue - ${packageInfo.description} | v${packageInfo.version} %c %c `,
+    `%c %c %c Cruda/element-plus - ${packageInfo.description} | v${packageInfo.version} %c %c `,
     ...ssAry,
-    "\u{1F4E6} https://gitee.com/holyhigh2/crud-vue"
+    "\u{1F4E6} https://github.com/holyhigh2/cruda-element-plus"
   );
 };
 
