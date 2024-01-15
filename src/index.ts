@@ -7,7 +7,7 @@
 import { closest } from "myfx/tree";
 import { each } from "myfx/collection";
 import { noop } from "myfx/utils";
-import { getCurrentInstance, reactive, watch } from "vue";
+import { App, getCurrentInstance, reactive, watch } from "vue";
 import CRUD, {
   crudError,
   RestUrl,
@@ -146,7 +146,7 @@ export function lookUpCrud(crudName?: string): CRUD | null {
   return crudVM.__crud_;
 }
 
-CRUD.install = function (app, options) {
+export function install (app:App, options:Record<string,any>) {
   if (!options.request) {
     crudError("Cannot find [request] in the installation options");
   }
@@ -174,5 +174,11 @@ CRUD.install = function (app, options) {
     "\u{1F4E6} https://github.com/holyhigh2/cruda-element-plus"
   );
 };
+export const HOOK = CRUD.HOOK
+export const RESTAPI = CRUD.RESTAPI
+export const defaults = CRUD.defaults
+export const xApi = CRUD.xApi
+
+CRUD.install = install
 
 export default CRUD;
