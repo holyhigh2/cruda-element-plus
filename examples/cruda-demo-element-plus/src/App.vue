@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
 import { FormInstance, ElMessageBox, ElNotification } from 'element-plus';
 import CRUD, { useCrud, onHook } from 'cruda-element-plus';
 import CrudaPagination from './components/CrudaPagination.vue';
@@ -34,6 +34,10 @@ onHook(CRUD.HOOK.AFTER_DETAILS,async (crud:CRUD,rs:any)=>{
   console.log('App',rs.data,Date.now());
 })
 
+onHook(CRUD.HOOK.ON_VALIDATE,(crud,isvalid,invalidFields)=>{
+  console.log(isvalid,invalidFields)
+})
+
 ///////////////////////////////// methods
 
 function getTitle() {
@@ -48,6 +52,10 @@ function toDelete(row) {
     $crud.toDelete(row);
   });
 }
+
+const customValidator = {
+    validate:()=>Promise.reject(false)
+  }
 </script>
 
 <template>
@@ -115,7 +123,7 @@ function toDelete(row) {
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="$crud.cancel()">取 消</el-button>
-        <el-button type="primary" @click="$crud.submit(formRef)">
+        <el-button type="primary" @click="$crud.submitForm(formRef!)">
           确 定
         </el-button>
       </span>

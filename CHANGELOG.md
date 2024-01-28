@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2024/1/28
+### Add
+- submitForm elementj-plus适配
+
 ## [1.4.0] - 2024/1/15
 ### Add
 - module params

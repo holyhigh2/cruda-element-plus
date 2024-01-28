@@ -5,7 +5,7 @@
  * @author holyhigh
  */
 import { closest } from "myfx/tree";
-import { each } from "myfx/collection";
+import { each, size } from "myfx/collection";
 import { noop } from "myfx/utils";
 import { App, getCurrentInstance, reactive, watch } from "vue";
 import CRUD, {
@@ -16,14 +16,63 @@ import CRUD, {
   _onHook,
   _setUpdater,
   _setSnapshot,
+  FormValidator,
+  callHook,
 } from "cruda";
 import * as packageInfo from "../package.json";
+import { isArrayLike, set } from "myfx";
+
+set(
+  CRUD.prototype,
+  "submitForm",
+  async function (
+    form:
+      | FormValidator
+      | FormValidator[]
+      | (() => Promise<FormValidator | FormValidator[]>),
+    ...args: unknown[]
+  ): Promise<unknown> {
+    let validators = form;
+    if (form instanceof Function) {
+      validators = await form();
+    } else {
+      validators = form;
+    }
+    if (!isArrayLike(validators)) {
+      validators = [validators];
+    }
+
+    const invalidBreak = this.invalidBreak;
+
+    let invalidFields = [];
+    let isValid = true;
+    for (let i = 0; i < validators.length; i++) {
+      try {
+        await validators[i].validate(...args);
+      } catch (error) {
+        isValid = false;
+        invalidFields.push(error);
+        if (invalidBreak) {
+          break;
+        }
+      }
+    }
+
+    callHook(CRUD.HOOK.ON_VALIDATE, this, isValid, invalidFields);
+
+    if (size(invalidFields) > 0) {
+      return Promise.reject(invalidFields);
+    }
+
+    return this.submit(...args);
+  }
+);
 
 function watchCrud(crudInstances: CRUD | Record<string, CRUD>) {
   if (crudInstances instanceof CRUD) {
     watch(
       () => crudInstances.form,
-      (nv: any,ov:any) => {
+      (nv: any, ov: any) => {
         if (!crudInstances.recoverable) return;
         if (crudInstances.formStatus !== 1 && crudInstances.formStatus !== 2) {
           return;
@@ -87,7 +136,7 @@ export function useCruds(
   let $cruds: Record<string, CRUD> = reactive(
     _newCruds(restURL, vm as Record<string, any>)
   );
-  $cruds = watchCrud($cruds) as Record<string, CRUD>
+  $cruds = watchCrud($cruds) as Record<string, CRUD>;
 
   //crud入口标识
   if (vm) {
@@ -146,17 +195,17 @@ export function lookUpCrud(crudName?: string): CRUD | null {
   return crudVM.__crud_;
 }
 
-export function install (app:App, options:Record<string,any>) {
+export function install(app: App, options: Record<string, any>) {
   if (!options.request) {
     crudError("Cannot find [request] in the installation options");
   }
   CRUD.request = options.request;
 
-  _setUpdater((form:Record<string, any>, props:Record<string, any>)=>{
-    each<any,string>(props,(v,k)=>{
-      form[k] = v
-    })    
-  })
+  _setUpdater((form: Record<string, any>, props: Record<string, any>) => {
+    each<any, string>(props, (v, k) => {
+      form[k] = v;
+    });
+  });
 
   // welcome info
   const ssAry: string[] = [];
@@ -173,12 +222,12 @@ export function install (app:App, options:Record<string,any>) {
     ...ssAry,
     "\u{1F4E6} https://github.com/holyhigh2/cruda-element-plus"
   );
-};
-export const HOOK = CRUD.HOOK
-export const RESTAPI = CRUD.RESTAPI
-export const defaults = CRUD.defaults
-export const xApi = CRUD.xApi
+}
+export const HOOK = CRUD.HOOK;
+export const RESTAPI = CRUD.RESTAPI;
+export const defaults = CRUD.defaults;
+export const xApi = CRUD.xApi;
 
-CRUD.install = install
+CRUD.install = install;
 
 export default CRUD;
