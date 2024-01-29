@@ -58,6 +58,27 @@ that's very useful if you want to do additional UI control like Auth
   })
 </script>
 ```
+```html
+<script lang="ts" setup>
+  import { useCruds } from 'cruda-element-plus'
+  const $cruds = useCruds({
+    t1: {
+      url:'/api/single',
+      query:{type:'1'}
+    },
+    t2: {
+      url: '/api/single',
+      query:{type:'2'}
+    },
+  })
+
+  //Reload instance 't1' with '?type=1' on mounted 
+  onMounted(() => {
+    //Same paramters will merged into query string
+    $cruds.t1.reload({type:3})
+  })
+</script>
+```
 ### 4. HOOK
 ```html
 <script lang="ts" setup>
