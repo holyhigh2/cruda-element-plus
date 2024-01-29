@@ -45,6 +45,28 @@ createApp(App).use(CRUD, { request: request })
   })
 </script>
 ```
+```html
+<script lang="ts" setup>
+  import { useCruds } from 'cruda-element-plus'
+  //对于同一地址，不同参数的使用场景（如分类列表）可使用默认查询参数
+  const $cruds = useCruds({
+    t1: {
+      url:'/api/single',
+      query:{type:'1'}
+    },
+    t2: {
+      url: '/api/single',
+      query:{type:'2'}
+    },
+  })
+
+  //自动加载t1并附加type=1的查询参数
+  onMounted(() => {
+    //查询接口的相同参数会被覆盖
+    $cruds.t1.reload({type:3})
+  })
+</script>
+```
 ### 4. HOOK
 ```html
 <script lang="ts" setup>
