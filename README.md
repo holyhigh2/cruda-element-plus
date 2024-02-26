@@ -27,7 +27,7 @@ createApp(App).use(CRUD, { request: request })
   })
 </script>
 ```
-You can pass custom parameters to Cruda besides the URL when you activate it in object way
+You can pass custom parameters to Cruda besides the URL when you activate it in object form
 
 ```js
 const $crud = useCrud({url:'/api/single',permission:'a_b_c'}) object way
